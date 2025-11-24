@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-voucher_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - voucher-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-voucher_db}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-development-secret}
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3000}
+    ports:
+      - '3433:3000'
+    depends_on:
+      - postgres
+    networks:
+      - voucher-network
+    volumes:
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+
+volumes:
+  postgres_data:
+
+networks:
+  voucher-network:
+    driver: bridge

@@ -1,0 +1,125 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      UserRole @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+
+  @@index([email])
+}
+
+model Voucher {
+  id             String       @id @default(uuid())
+  code           String       @unique
+  discountType   DiscountType
+  discountValue  Decimal      @db.Decimal(10, 2)
+  expirationDate DateTime
+  usageLimit     Int
+  currentUsage   Int          @default(0)
+  minOrderValue  Decimal?     @db.Decimal(10, 2)
+  isActive       Boolean      @default(true)
+  version        Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  @@index([code])
+  @@index([expirationDate])
+  @@index([isActive])
+}
+
+model Promotion {
+  id               String       @id @default(uuid())
+  code             String       @unique
+  discountType     DiscountType
+  discountValue    Decimal      @db.Decimal(10, 2)
+  expirationDate   DateTime
+  usageLimit       Int
+  currentUsage     Int          @default(0)
+  eligibleCategories String[]
+  eligibleItems    String[]
+  isActive         Boolean      @default(true)
+  version          Int          @default(0)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  deletedAt        DateTime?
+
+  @@index([code])
+  @@index([expirationDate])
+  @@index([isActive])
+}
+
+model Order {
+  id            String        @id @default(uuid())
+  customerId    String
+  customer      User          @relation(fields: [customerId], references: [id])
+  subtotal      Decimal       @db.Decimal(10, 2)
+  totalDiscount Decimal       @db.Decimal(10, 2) @default(0)
+  finalTotal    Decimal       @db.Decimal(10, 2)
+  status        OrderStatus   @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  items         OrderItem[]
+  discounts     OrderDiscount[]
+
+  @@index([customerId])
+  @@index([status])
+}
+
+model OrderItem {
+  id          String  @id @default(uuid())
+  orderId     String
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  productName String
+  category    String
+  unitPrice   Decimal @db.Decimal(10, 2)
+  quantity    Int
+  lineTotal   Decimal @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@index([category])
+}
+
+model OrderDiscount {
+  id             String   @id @default(uuid())
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  discountType   String   // 'VOUCHER' or 'PROMOTION'
+  discountCode   String
+  discountAmount Decimal  @db.Decimal(10, 2)
+  appliedAt      DateTime @default(now())
+
+  @@unique([orderId, discountCode])
+  @@index([orderId])
+  @@index([discountCode])
+}

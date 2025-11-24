@@ -1,0 +1,792 @@
+{
+  "info": {
+    "name": "Voucher and Promotion Management API",
+    "description": "Complete API collection for managing vouchers, promotions, and applying discounts to orders",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "voucher-api-v1",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "customerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "voucherCode",
+      "value": "SAVE20",
+      "type": "string"
+    },
+    {
+      "key": "promotionCode",
+      "value": "TECHSALE",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('adminToken', response.accessToken);",
+                  "    console.log('Admin registered successfully');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Register a new admin user"
+          },
+          "response": []
+        },
+        {
+          "name": "Register Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('customerToken', response.accessToken);",
+                  "    console.log('Customer registered successfully');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Register a new customer user (default role)"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('adminToken', response.accessToken);",
+                  "    pm.collectionVariables.set('accessToken', response.accessToken);",
+                  "    console.log('Admin logged in successfully');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Login as admin and receive JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('customerToken', response.accessToken);",
+                  "    pm.collectionVariables.set('accessToken', response.accessToken);",
+                  "    console.log('Customer logged in successfully');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Login as customer and receive JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "description": "Refresh JWT access token"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "profile"]
+            },
+            "description": "Get current user profile"
+          },
+          "response": []
+        }
+      ],
+      "description": "User authentication and registration endpoints"
+    },
+    {
+      "name": "Vouchers (Admin)",
+      "item": [
+        {
+          "name": "Create Voucher",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"SAVE20\",\n \"discountType\": \"PERCENTAGE\",\n  \"discountValue\": 20,\n  \"minOrderValue\": 50,\n  \"expirationDate\": \"2025-12-31T23:59:59Z\",\n  \"usageLimit\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vouchers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "vouchers"]
+            },
+            "description": "Create a new voucher (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "List Vouchers",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vouchers?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "vouchers"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "List all vouchers with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Voucher by Code",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vouchers/{{voucherCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "vouchers", "{{voucherCode}}"]
+            },
+            "description": "Get voucher details by code"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Voucher",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usageLimit\": 150\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vouchers/{{voucherCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "vouchers", "{{voucherCode}}"]
+            },
+            "description": "Update voucher details"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Voucher",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vouchers/{{voucherCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "vouchers", "{{voucherCode}}"]
+            },
+            "description": "Soft delete voucher"
+          },
+          "response": []
+        }
+      ],
+      "description": "Voucher management endpoints (Admin only)"
+    },
+    {
+      "name": "Promotions (Admin)",
+      "item": [
+        {
+          "name": "Create Promotion",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"TECHSALE\",\n  \"discountType\": \"PERCENTAGE\",\n  \"discountValue\": 15,\n  \"eligibleCategories\": [\"Electronics\"],\n  \"eligibleItems\": [],\n  \"expirationDate\": \"2025-12-31T23:59:59Z\",\n  \"usageLimit\": 50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions"]
+            },
+            "description": "Create a new promotion (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "List Promotions",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "List all promotions with pagination"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Promotion by Code",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions/{{promotionCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions", "{{promotionCode}}"]
+            },
+            "description": "Get promotion details by code"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Promotion",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usageLimit\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions/{{promotionCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions", "{{promotionCode}}"]
+            },
+            "description": "Update promotion details"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Promotion",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('adminToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promotions/{{promotionCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "promotions", "{{promotionCode}}"]
+            },
+            "description": "Soft delete promotion"
+          },
+          "response": []
+        }
+      ],
+      "description": "Promotion management endpoints (Admin only)"
+    },
+    {
+      "name": "Orders (Customer)",
+      "item": [
+        {
+          "name": "Create Order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('customerToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('orderId', response.id);",
+                  "    console.log('Order created: ' + response.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"LAPTOP-001\",\n      \"productName\": \"Gaming Laptop\",\n      \"category\": \"Electronics\",\n      \"unitPrice\": 1000,\n      \"quantity\": 1\n    },\n    {\n      \"productId\": \"MOUSE-001\",\n      \"productName\": \"Wireless Mouse\",\n      \"category\": \"Electronics\",\n      \"unitPrice\": 50,\n      \"quantity\": 2\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders"]
+            },
+            "description": "Create a new order"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('customerToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}"]
+            },
+            "description": "Get order details"
+          },
+          "response": []
+        },
+        {
+          "name": "Apply Voucher",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('customerToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{voucherCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}/apply-discount",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}", "apply-discount"]
+            },
+            "description": "Apply voucher to order"
+          },
+          "response": []
+        },
+        {
+          "name": "Apply Promotion",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('customerToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{promotionCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}/apply-discount",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}", "apply-discount"]
+            },
+            "description": "Apply promotion to order"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Discount",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('customerToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}/discounts/{{voucherCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}", "discounts", "{{voucherCode}}"]
+            },
+            "description": "Remove discount from order"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('accessToken', pm.collectionVariables.get('customerToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}", "cancel"]
+            },
+            "description": "Cancel an order"
+          },
+          "response": []
+        }
+      ],
+      "description": "Order management and discount application endpoints"
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Public health check endpoint"
+          },
+          "response": []
+        }
+      ],
+      "description": "System health check endpoints"
+    }
+  ]
+}
