@@ -6,5 +6,6 @@
     "deleteOutDir": true,
     "builder": "tsc",
     "typeCheck": true
-  }
+  },
+  "entryFile": "main"
 }

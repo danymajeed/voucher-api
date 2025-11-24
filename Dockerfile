@@ -16,30 +16,8 @@ COPY . .
 
 RUN npm run build
 
-# Development stage
-FROM node:20-slim AS development
-
-WORKDIR /app
-
-# Install OpenSSL for Prisma
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
-
-COPY package*.json ./
-COPY prisma ./prisma/
-
-RUN npm ci
-RUN npx prisma generate
-
-COPY . .
-
-RUN npm run build
-
-EXPOSE 3000
-
-CMD ["npm", "run", "start:dev"]
-
 # Production stage
-FROM node:20-slim AS production
+FROM node:20-slim
 
 WORKDIR /app
 
